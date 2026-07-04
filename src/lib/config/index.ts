@@ -11,6 +11,8 @@
 export const publicConfig = {
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
+  /** このアプリ自身のURL（メール内リンクの戻り先などに使用） */
+  appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
 } as const;
 
 /** サーバー側だけで使う秘密設定。クライアントから呼ぶとエラーにする */
