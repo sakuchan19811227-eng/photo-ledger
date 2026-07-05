@@ -11,6 +11,8 @@ export type UploadResult =
 export interface IStorage {
   /** ファイルを保存する（path例: "{projectId}/{uuid}.jpg"） */
   upload(path: string, data: ArrayBuffer, contentType: string): Promise<UploadResult>;
+  /** ファイルの中身を取得する（Excel埋め込み等のサーバー処理用） */
+  download(path: string): Promise<ArrayBuffer | null>;
   /** 閲覧用の期限付きURLを発行する */
   getSignedUrl(path: string, expiresInSeconds: number): Promise<string | null>;
   /** ファイルを削除する */

@@ -62,7 +62,19 @@ export default async function ProjectDetailPage({
             <p className="text-base text-gray-600">{project.constructionName}</p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={`/api/export/excel/${project.id}`}
+            className="rounded-lg bg-green-600 px-4 py-2 text-base font-bold text-white hover:bg-green-700"
+          >
+            📊 Excel出力
+          </a>
+          <Link
+            href={`/projects/${project.id}/print`}
+            className="rounded-lg bg-red-500 px-4 py-2 text-base font-bold text-white hover:bg-red-600"
+          >
+            📄 PDF出力
+          </Link>
           <Link
             href={`/projects/${project.id}/edit`}
             className="rounded-lg border border-gray-300 px-4 py-2 text-base text-gray-700 hover:bg-gray-50"

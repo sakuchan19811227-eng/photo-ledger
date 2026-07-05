@@ -1,7 +1,7 @@
 # 写真台帳（photo-ledger）仕様書
 
 搭載機能と使用技術の一覧。機能追加のたびに本書を更新する。
-（最終更新: 2026-07-05 / Phase2完了時点）
+（最終更新: 2026-07-05 / Phase3完了時点）
 
 ---
 
@@ -35,8 +35,21 @@
 | 検索 | コメント/ファイル名の部分一致（?pq=） |
 | 一括選択・削除 | チェックボックス＋一括論理削除。写真ゴミ箱から復元 |
 
+### 台帳出力（Phase3）
+| 機能 | 内容 |
+|---|---|
+| Excel出力 | 工事写真台帳形式（A4縦・1ページ3枚）。写真埋め込み（sharpでJPEG変換・縮小）＋撮影日時＋コメント。レイアウトは `lib/services/excel/ledger-template.ts` でテンプレート化 |
+| PDF出力 | 印刷ビュー（/projects/{id}/print）＋ブラウザの「PDFに保存」。サーバーレス環境でも確実に動く方式を採用（Puppeteer不使用） |
+| 死活監視 | /api/health（Vercel cronが毎日実行 → Supabase無料枠の7日休止を防止） |
+
+### インフラ（永久無料構成）
+| 項目 | 内容 |
+|---|---|
+| ホスティング | Vercel Hobby（無料・非商用） |
+| バックエンド | Supabase Free（休止防止のkeep-alive cron付き） |
+| PDF生成 | サーバー処理なし（ブラウザ印刷）のため追加コストゼロ |
+
 ### 未実装（今後の予定）
-- Phase3: Excel出力（ExcelJS）/ PDF出力（Puppeteer）
 - Phase4: 操作ログ（audit_logs テーブルは作成済み）/ 管理画面
 - Phase5: AI機能（コメント自動生成・写真分類・撮り忘れ検知）用の枠 `lib/services/ai/` は確保済み
 
@@ -65,6 +78,8 @@
 | drizzle-kit | マイグレーション生成（開発用） |
 | exifr | EXIF（撮影日時）読取 |
 | react-dropzone | ドラッグ＆ドロップ |
+| exceljs | Excel台帳生成（画像埋め込み） |
+| sharp | 画像のJPEG変換・縮小（Excel埋め込み用） |
 
 ## 3. アーキテクチャ（要点）
 

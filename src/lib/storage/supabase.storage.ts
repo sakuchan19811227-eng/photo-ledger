@@ -24,6 +24,12 @@ export class SupabaseStorage implements IStorage {
     return { ok: true, path };
   }
 
+  async download(path: string): Promise<ArrayBuffer | null> {
+    const { data, error } = await this.client.storage.from(BUCKET).download(path);
+    if (error || !data) return null;
+    return data.arrayBuffer();
+  }
+
   async getSignedUrl(path: string, expiresInSeconds: number): Promise<string | null> {
     const { data, error } = await this.client.storage
       .from(BUCKET)
