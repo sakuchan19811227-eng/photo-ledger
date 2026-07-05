@@ -58,12 +58,22 @@ export type PhotoInput = {
 };
 
 export interface IPhotoRepository {
-  /** 現場の写真一覧（削除済みを除く、並び順→撮影日時順） */
-  listByProject(projectId: string): Promise<Photo[]>;
+  /** 現場の写真一覧（削除済みを除く、並び順→撮影日時順）。keyword はコメント/ファイル名の部分一致 */
+  listByProject(projectId: string, keyword?: string): Promise<Photo[]>;
+  /** 現場のゴミ箱（削除済み写真の一覧） */
+  listDeletedByProject(projectId: string): Promise<Photo[]>;
   /** 登録 */
   create(input: PhotoInput): Promise<Photo>;
   /** 現場内の次の並び順番号を得る */
   nextSortOrder(projectId: string): Promise<number>;
+  /** コメントの保存（対象現場の写真のみ） */
+  updateComment(id: string, projectId: string, comment: string): Promise<boolean>;
+  /** 並び順の変更 */
+  setSortOrder(id: string, projectId: string, sortOrder: number): Promise<boolean>;
+  /** 論理削除（複数まとめて） */
+  softDeleteMany(ids: string[], projectId: string): Promise<number>;
+  /** ゴミ箱から復元 */
+  restore(id: string, projectId: string): Promise<boolean>;
 }
 
 export interface IProjectRepository {

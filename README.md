@@ -16,6 +16,8 @@
 | [docs/01-architecture-and-structure.md](docs/01-architecture-and-structure.md) | アーキテクチャ方針・フォルダ構成 |
 | [docs/02-database-design.md](docs/02-database-design.md) | DB設計（テーブル・RLS） |
 | [docs/03-libraries-and-setup.md](docs/03-libraries-and-setup.md) | ライブラリ一覧・環境構築手順 |
+| [docs/04-user-manual.md](docs/04-user-manual.md) | **取扱説明書**（利用者向け・順序立てた使い方） |
+| [docs/05-specifications.md](docs/05-specifications.md) | **仕様書**（搭載機能・使用技術の一覧） |
 | [supabase/schema.sql](supabase/schema.sql) | Supabaseで実行する初期構築SQL |
 
 ## 開発の始め方
@@ -55,8 +57,8 @@ src/
 
 | Phase | 内容 | 状態 |
 |---|---|---|
-| 1 | 認証 / 現場管理 / 写真アップロード | 🔨 進行中（Step1: 雛形 完了） |
-| 2 | 写真一覧 / コメント入力 | 未着手 |
+| 1 | 認証 / 現場管理 / 写真アップロード | ✅ 完了 |
+| 2 | 写真一覧 / コメント入力 / 並び替え / 一括選択 | ✅ 完了 |
 | 3 | Excel出力 / PDF出力 | 未着手 |
 | 4 | ログ管理 / 管理画面 | 未着手 |
 | 5 | AI追加しやすい構造へリファクタ | 未着手 |

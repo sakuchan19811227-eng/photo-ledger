@@ -117,3 +117,97 @@ export async function uploadPhotosAction(
     results,
   };
 }
+
+/** 本人確認＋現場の所有確認。OKならユーザーIDを返す */
+async function requireProjectOwner(projectId: string): Promise<string | null> {
+  const auth = await getServerAuthService();
+  const user = await auth.getCurrentUser();
+  if (!user) return null;
+  const project = await getProjectRepository().findById(projectId, user.id);
+  if (!project || project.isDeleted) return null;
+  return user.id;
+}
+
+export type SimpleResult = { ok: boolean; message: string };
+
+/** 写真コメントの保存 */
+export async function updatePhotoCommentAction(
+  projectId: string,
+  photoId: string,
+  comment: string
+): Promise<SimpleResult> {
+  const userId = await requireProjectOwner(projectId);
+  if (!userId) return { ok: false, message: "権限がありません" };
+
+  const saved = await getPhotoRepository().updateComment(
+    photoId,
+    projectId,
+    comment.trim()
+  );
+  if (!saved) return { ok: false, message: "対象の写真が見つかりません" };
+
+  revalidatePath(`/projects/${projectId}`);
+  return { ok: true, message: "コメントを保存しました" };
+}
+
+/** 写真の並び替え（1つ上へ / 1つ下へ） */
+export async function movePhotoAction(
+  projectId: string,
+  photoId: string,
+  direction: "up" | "down"
+): Promise<SimpleResult> {
+  const userId = await requireProjectOwner(projectId);
+  if (!userId) return { ok: false, message: "権限がありません" };
+
+  const repo = getPhotoRepository();
+  const list = await repo.listByProject(projectId);
+  const index = list.findIndex((p) => p.id === photoId);
+  if (index === -1) return { ok: false, message: "対象の写真が見つかりません" };
+
+  const neighborIndex = direction === "up" ? index - 1 : index + 1;
+  if (neighborIndex < 0 || neighborIndex >= list.length) {
+    return { ok: true, message: "" }; // 端なので何もしない
+  }
+
+  const photo = list[index];
+  const neighbor = list[neighborIndex];
+  // sort_order を入れ替える（同値の場合に備えて index ベースの値で振り直す）
+  const orderA = photo.sortOrder === neighbor.sortOrder ? neighborIndex + 1 : neighbor.sortOrder;
+  const orderB = photo.sortOrder === neighbor.sortOrder ? index + 1 : photo.sortOrder;
+  await repo.setSortOrder(photo.id, projectId, orderA);
+  await repo.setSortOrder(neighbor.id, projectId, orderB);
+
+  revalidatePath(`/projects/${projectId}`);
+  return { ok: true, message: "" };
+}
+
+/** 選択した写真の一括削除（論理削除・ゴミ箱へ） */
+export async function bulkDeletePhotosAction(
+  projectId: string,
+  photoIds: string[]
+): Promise<SimpleResult> {
+  const userId = await requireProjectOwner(projectId);
+  if (!userId) return { ok: false, message: "権限がありません" };
+  if (photoIds.length === 0) {
+    return { ok: false, message: "写真が選択されていません" };
+  }
+
+  const count = await getPhotoRepository().softDeleteMany(photoIds, projectId);
+  revalidatePath(`/projects/${projectId}`);
+  return { ok: true, message: `${count}枚をゴミ箱に移動しました` };
+}
+
+/** 写真をゴミ箱から復元 */
+export async function restorePhotoAction(
+  projectId: string,
+  photoId: string
+): Promise<SimpleResult> {
+  const userId = await requireProjectOwner(projectId);
+  if (!userId) return { ok: false, message: "権限がありません" };
+
+  const restored = await getPhotoRepository().restore(photoId, projectId);
+  if (!restored) return { ok: false, message: "対象の写真が見つかりません" };
+
+  revalidatePath(`/projects/${projectId}`);
+  return { ok: true, message: "復元しました" };
+}
