@@ -8,6 +8,7 @@ import { getServerAuthService } from "@/lib/auth";
 import { getPhotoRepository, getProjectRepository } from "@/lib/repositories";
 import { getServerStorage } from "@/lib/storage";
 import { buildLedgerWorkbook, type LedgerPhoto } from "@/lib/services/excel/ledger";
+import { recordAudit } from "@/lib/services/audit";
 
 export async function GET(
   _request: NextRequest,
@@ -61,6 +62,12 @@ export async function GET(
   });
 
   const buffer = await workbook.xlsx.writeBuffer();
+
+  await recordAudit(user.id, "export_excel", {
+    tableName: "projects",
+    targetId: projectId,
+    metadata: { projectName: project.projectName, photoCount: ledgerPhotos.length },
+  });
 
   const dateLabel = new Date().toISOString().slice(0, 10);
   const fileName = `写真台帳_${project.projectName}_${dateLabel}.xlsx`;

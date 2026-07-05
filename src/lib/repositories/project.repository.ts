@@ -3,7 +3,7 @@
  */
 import { and, desc, eq, ilike, or } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { projects } from "@/lib/db/schema";
+import { projects, users } from "@/lib/db/schema";
 import type { IProjectRepository, Project, ProjectInput } from "./types";
 
 export class DrizzleProjectRepository implements IProjectRepository {
@@ -34,6 +34,16 @@ export class DrizzleProjectRepository implements IProjectRepository {
       .from(projects)
       .where(and(eq(projects.userId, userId), eq(projects.isDeleted, true)))
       .orderBy(desc(projects.updatedAt));
+  }
+
+  async listAllDeleted(): Promise<Array<Project & { ownerEmail: string | null }>> {
+    const rows = await db
+      .select({ project: projects, ownerEmail: users.email })
+      .from(projects)
+      .leftJoin(users, eq(projects.userId, users.id))
+      .where(eq(projects.isDeleted, true))
+      .orderBy(desc(projects.updatedAt));
+    return rows.map((r) => ({ ...r.project, ownerEmail: r.ownerEmail }));
   }
 
   async findById(id: string, userId: string): Promise<Project | null> {

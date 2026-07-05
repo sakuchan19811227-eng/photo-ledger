@@ -32,6 +32,55 @@ export type ProjectInput = {
   memo?: string | null;
 };
 
+/** アプリ利用者（public.users） */
+export type AppUser = {
+  id: string;
+  name: string | null;
+  email: string;
+  role: string; // 'admin' | 'general'
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export interface IUserRepository {
+  /** 1件取得 */
+  findById(id: string): Promise<AppUser | null>;
+  /** 全ユーザー一覧（管理画面用） */
+  listAll(): Promise<AppUser[]>;
+  /** 有効/無効の切替（管理画面用） */
+  setActive(id: string, isActive: boolean): Promise<boolean>;
+}
+
+/** 操作ログ */
+export type AuditLog = {
+  id: string;
+  userId: string | null;
+  action: string;
+  tableName: string | null;
+  targetId: string | null;
+  metadata: unknown;
+  createdAt: Date;
+};
+
+/** 操作ログ＋実行者メール（管理画面の表示用） */
+export type AuditLogWithUser = AuditLog & { userEmail: string | null };
+
+export type AuditLogInput = {
+  userId: string | null;
+  action: string;
+  tableName?: string | null;
+  targetId?: string | null;
+  metadata?: Record<string, unknown> | null;
+};
+
+export interface IAuditLogRepository {
+  /** 記録 */
+  create(input: AuditLogInput): Promise<void>;
+  /** 新しい順に取得（管理画面用）。action指定で絞り込み */
+  listRecent(limit: number, action?: string): Promise<AuditLogWithUser[]>;
+}
+
 /** 写真 */
 export type Photo = {
   id: string;
@@ -62,6 +111,8 @@ export interface IPhotoRepository {
   listByProject(projectId: string, keyword?: string): Promise<Photo[]>;
   /** 現場のゴミ箱（削除済み写真の一覧） */
   listDeletedByProject(projectId: string): Promise<Photo[]>;
+  /** 全ユーザーの削除済み写真（管理画面用） */
+  listAllDeleted(): Promise<Array<Photo & { projectName: string | null }>>;
   /** 登録 */
   create(input: PhotoInput): Promise<Photo>;
   /** 現場内の次の並び順番号を得る */
@@ -81,6 +132,8 @@ export interface IProjectRepository {
   listByUser(userId: string, keyword?: string): Promise<Project[]>;
   /** 自分のゴミ箱（削除済み一覧） */
   listDeletedByUser(userId: string): Promise<Project[]>;
+  /** 全ユーザーの削除済み現場（管理画面用） */
+  listAllDeleted(): Promise<Array<Project & { ownerEmail: string | null }>>;
   /** 1件取得（本人のもの以外は null） */
   findById(id: string, userId: string): Promise<Project | null>;
   /** 登録 */

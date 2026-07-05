@@ -7,6 +7,7 @@
 import { redirect } from "next/navigation";
 import { getServerAuthService } from "@/lib/auth";
 import { publicConfig } from "@/lib/config";
+import { recordAudit } from "@/lib/services/audit";
 
 /** フォームに返す結果の型 */
 export type FormState = {
@@ -27,6 +28,9 @@ export async function loginAction(
   const auth = await getServerAuthService();
   const result = await auth.signIn(email, password);
   if (!result.ok) return { ok: false, message: result.message };
+
+  const user = await auth.getCurrentUser();
+  await recordAudit(user?.id ?? null, "login");
 
   redirect("/projects");
 }
@@ -54,6 +58,12 @@ export async function registerAction(
   const result = await auth.signUp(email, password, name);
   if (!result.ok) return { ok: false, message: result.message };
 
+  const newUser = await auth.getCurrentUser();
+  await recordAudit(newUser?.id ?? null, "register", {
+    tableName: "users",
+    metadata: { email },
+  });
+
   if (result.needsEmailConfirmation) {
     return {
       ok: true,
@@ -67,7 +77,9 @@ export async function registerAction(
 
 export async function logoutAction(): Promise<void> {
   const auth = await getServerAuthService();
+  const user = await auth.getCurrentUser();
   await auth.signOut();
+  await recordAudit(user?.id ?? null, "logout");
   redirect("/login");
 }
 

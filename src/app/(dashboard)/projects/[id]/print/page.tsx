@@ -10,6 +10,7 @@ import { getPhotoRepository, getProjectRepository } from "@/lib/repositories";
 import { getServerStorage } from "@/lib/storage";
 import { PrintButton } from "@/components/photos/PrintButton";
 import { ledgerTemplate as T } from "@/lib/services/excel/ledger-template";
+import { recordAudit } from "@/lib/services/audit";
 
 const SIGNED_URL_TTL = 60 * 60;
 
@@ -45,6 +46,12 @@ export default async function PrintLedgerPage({
       url: await storage.getSignedUrl(p.storagePath, SIGNED_URL_TTL),
     }))
   );
+
+  await recordAudit(user.id, "export_pdf", {
+    tableName: "projects",
+    targetId: project.id,
+    metadata: { projectName: project.projectName, photoCount: photos.length },
+  });
 
   const periodLabel =
     project.startDate || project.endDate

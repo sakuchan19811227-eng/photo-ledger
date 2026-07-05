@@ -10,6 +10,7 @@ import { getServerAuthService } from "@/lib/auth";
 import { getPhotoRepository, getProjectRepository } from "@/lib/repositories";
 import { getServerStorage } from "@/lib/storage";
 import { extractTakenAt } from "@/lib/utils/exif";
+import { recordAudit } from "@/lib/services/audit";
 
 /** 受け付ける画像形式と上限サイズ */
 const ALLOWED_TYPES: Record<string, string> = {
@@ -111,6 +112,13 @@ export async function uploadPhotosAction(
   revalidatePath(`/projects/${projectId}`);
 
   const okCount = results.filter((r) => r.ok).length;
+  if (okCount > 0) {
+    await recordAudit(user.id, "photo_upload", {
+      tableName: "photos",
+      targetId: projectId,
+      metadata: { count: okCount, projectName: project.projectName },
+    });
+  }
   return {
     ok: okCount > 0,
     message: `${okCount} / ${files.length} 枚をアップロードしました`,
@@ -146,6 +154,10 @@ export async function updatePhotoCommentAction(
   );
   if (!saved) return { ok: false, message: "対象の写真が見つかりません" };
 
+  await recordAudit(userId, "photo_comment_update", {
+    tableName: "photos",
+    targetId: photoId,
+  });
   revalidatePath(`/projects/${projectId}`);
   return { ok: true, message: "コメントを保存しました" };
 }
@@ -193,6 +205,11 @@ export async function bulkDeletePhotosAction(
   }
 
   const count = await getPhotoRepository().softDeleteMany(photoIds, projectId);
+  await recordAudit(userId, "photo_delete", {
+    tableName: "photos",
+    targetId: projectId,
+    metadata: { count },
+  });
   revalidatePath(`/projects/${projectId}`);
   return { ok: true, message: `${count}枚をゴミ箱に移動しました` };
 }
@@ -208,6 +225,10 @@ export async function restorePhotoAction(
   const restored = await getPhotoRepository().restore(photoId, projectId);
   if (!restored) return { ok: false, message: "対象の写真が見つかりません" };
 
+  await recordAudit(userId, "photo_restore", {
+    tableName: "photos",
+    targetId: photoId,
+  });
   revalidatePath(`/projects/${projectId}`);
   return { ok: true, message: "復元しました" };
 }

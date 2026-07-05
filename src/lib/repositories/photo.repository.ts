@@ -3,9 +3,9 @@
  * 全メソッドで projectId を条件に含め、他現場の写真を触れないようにする。
  * （その現場が本人のものかの確認は、呼び出し側の Server Action が行う）
  */
-import { and, asc, eq, ilike, inArray, max, or } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, max, or } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { photos } from "@/lib/db/schema";
+import { photos, projects } from "@/lib/db/schema";
 import type { IPhotoRepository, Photo, PhotoInput } from "./types";
 
 export class DrizzlePhotoRepository implements IPhotoRepository {
@@ -32,6 +32,16 @@ export class DrizzlePhotoRepository implements IPhotoRepository {
       .from(photos)
       .where(and(eq(photos.projectId, projectId), eq(photos.isDeleted, true)))
       .orderBy(asc(photos.sortOrder));
+  }
+
+  async listAllDeleted(): Promise<Array<Photo & { projectName: string | null }>> {
+    const rows = await db
+      .select({ photo: photos, projectName: projects.projectName })
+      .from(photos)
+      .leftJoin(projects, eq(photos.projectId, projects.id))
+      .where(eq(photos.isDeleted, true))
+      .orderBy(desc(photos.updatedAt));
+    return rows.map((r) => ({ ...r.photo, projectName: r.projectName }));
   }
 
   async create(input: PhotoInput): Promise<Photo> {

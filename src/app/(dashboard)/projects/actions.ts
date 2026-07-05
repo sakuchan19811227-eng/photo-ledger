@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getServerAuthService } from "@/lib/auth";
 import { getProjectRepository, type ProjectInput } from "@/lib/repositories";
+import { recordAudit } from "@/lib/services/audit";
 
 export type FormState = {
   ok: boolean;
@@ -62,7 +63,12 @@ export async function createProjectAction(
   const parsed = parseProjectForm(formData);
   if (!parsed.ok) return { ok: false, message: parsed.message };
 
-  await getProjectRepository().create(userId, parsed.input);
+  const created = await getProjectRepository().create(userId, parsed.input);
+  await recordAudit(userId, "project_create", {
+    tableName: "projects",
+    targetId: created.id,
+    metadata: { projectName: created.projectName },
+  });
   revalidatePath("/projects");
   redirect("/projects");
 }
@@ -81,6 +87,11 @@ export async function updateProjectAction(
   if (!updated) {
     return { ok: false, message: "対象の現場が見つかりませんでした" };
   }
+  await recordAudit(userId, "project_update", {
+    tableName: "projects",
+    targetId: projectId,
+    metadata: { projectName: updated.projectName },
+  });
   revalidatePath("/projects");
   redirect("/projects");
 }
@@ -88,12 +99,20 @@ export async function updateProjectAction(
 export async function deleteProjectAction(projectId: string): Promise<void> {
   const userId = await requireUserId();
   await getProjectRepository().softDelete(projectId, userId);
+  await recordAudit(userId, "project_delete", {
+    tableName: "projects",
+    targetId: projectId,
+  });
   revalidatePath("/projects");
 }
 
 export async function restoreProjectAction(projectId: string): Promise<void> {
   const userId = await requireUserId();
   await getProjectRepository().restore(projectId, userId);
+  await recordAudit(userId, "project_restore", {
+    tableName: "projects",
+    targetId: projectId,
+  });
   revalidatePath("/projects");
   revalidatePath("/trash");
 }
