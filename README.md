@@ -2,6 +2,8 @@
 
 「写真をアップロードするだけで、写真台帳作成を30分以内に終わらせる」ためのWebアプリです。
 
+**🌐 公開デモ: https://photo-ledger-rho.vercel.app**（無料で新規登録して試せます）
+
 ## 技術スタック
 
 - **フロント**: Next.js (App Router) + TypeScript + Tailwind CSS
