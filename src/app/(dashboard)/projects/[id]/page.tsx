@@ -1,11 +1,17 @@
 /**
- * 現場詳細ページ。
- * Step4（写真アップロード・写真管理）でここに写真一覧を実装する。
+ * 現場詳細ページ = 写真管理の中心。
+ * 写真のアップロード（D&D）とサムネイル一覧を表示する。
  */
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getServerAuthService } from "@/lib/auth";
-import { getProjectRepository } from "@/lib/repositories";
+import { getPhotoRepository, getProjectRepository } from "@/lib/repositories";
+import { getServerStorage } from "@/lib/storage";
+import { PhotoUploader } from "@/components/photos/PhotoUploader";
+import { PhotoGrid, type PhotoWithUrl } from "@/components/photos/PhotoGrid";
+
+/** サムネイル表示用URLの有効期限（秒） */
+const SIGNED_URL_TTL = 60 * 60;
 
 export default async function ProjectDetailPage({
   params,
@@ -19,6 +25,15 @@ export default async function ProjectDetailPage({
   const { id } = await params;
   const project = await getProjectRepository().findById(id, user.id);
   if (!project || project.isDeleted) notFound();
+
+  const photos = await getPhotoRepository().listByProject(project.id);
+  const storage = await getServerStorage();
+  const photosWithUrl: PhotoWithUrl[] = await Promise.all(
+    photos.map(async (photo) => ({
+      ...photo,
+      url: await storage.getSignedUrl(photo.storagePath, SIGNED_URL_TTL),
+    }))
+  );
 
   return (
     <div>
@@ -45,12 +60,14 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white p-10 text-center shadow">
-        <p className="text-lg text-gray-600">📷 写真管理はここに作ります</p>
-        <p className="mt-2 text-base text-gray-500">
-          次のステップ（Step4: 写真アップロード）で実装予定です。
-        </p>
+      <div className="mb-6">
+        <PhotoUploader projectId={project.id} />
       </div>
+
+      <h2 className="mb-3 text-xl font-bold text-gray-800">
+        写真（{photos.length}枚）
+      </h2>
+      <PhotoGrid photos={photosWithUrl} />
     </div>
   );
 }

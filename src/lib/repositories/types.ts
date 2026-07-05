@@ -32,6 +32,40 @@ export type ProjectInput = {
   memo?: string | null;
 };
 
+/** 写真 */
+export type Photo = {
+  id: string;
+  projectId: string;
+  fileName: string;
+  storagePath: string;
+  comment: string | null;
+  takenAt: Date | null;
+  sortOrder: number;
+  createdBy: string | null;
+  isDeleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+/** 写真の登録に使う入力 */
+export type PhotoInput = {
+  projectId: string;
+  fileName: string;
+  storagePath: string;
+  takenAt?: Date | null;
+  sortOrder: number;
+  createdBy: string;
+};
+
+export interface IPhotoRepository {
+  /** 現場の写真一覧（削除済みを除く、並び順→撮影日時順） */
+  listByProject(projectId: string): Promise<Photo[]>;
+  /** 登録 */
+  create(input: PhotoInput): Promise<Photo>;
+  /** 現場内の次の並び順番号を得る */
+  nextSortOrder(projectId: string): Promise<number>;
+}
+
 export interface IProjectRepository {
   /** 自分の現場一覧（削除済みを除く）。keyword があれば現場名/工事名/顧客名で部分一致検索 */
   listByUser(userId: string, keyword?: string): Promise<Project[]>;
