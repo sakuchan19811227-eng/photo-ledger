@@ -1,7 +1,7 @@
 # 写真台帳（photo-ledger）仕様書
 
 搭載機能と使用技術の一覧。機能追加のたびに本書を更新する。
-（最終更新: 2026-07-06 / Phase4完了時点）
+（最終更新: 2026-07-06 / Phase5完了時点＝指示書の全Phase完了）
 
 ---
 
@@ -58,8 +58,17 @@
 | 削除データ確認 | /admin/deleted。全ユーザーの削除済み現場・写真を閲覧 |
 | 権限制御 | users.role（admin/general）。管理画面はadminのみ、一般ユーザーは/projectsへ転送。最初の管理者はSQLで任命（schema.sql末尾参照） |
 
-### 未実装（今後の予定）
-- Phase5: AI機能（コメント自動生成・写真分類・撮り忘れ検知）用の枠 `lib/services/ai/` は確保済み
+### AI対応構造（Phase5）
+| 項目 | 内容 |
+|---|---|
+| AI抽象化層 | `lib/services/ai/` に `IAiService`（コメント生成/写真分類/撮り忘れ検知の3機能の受け口）を定義。`AI_PROVIDER` 環境変数で実装切替（現在 none=無効） |
+| 導入手順書 | [06-ai-integration-guide.md](06-ai-integration-guide.md) — Claude API（claude-opus-4-8）での実装例・料金目安・UI組み込みポイントを記載 |
+| 方針 | AIなしでも全機能が完全動作。AIは追加時も `lib/services/ai/` 内の変更だけで有効化できる |
+
+### 未実装（AI実装時の具体機能・docs/06参照）
+- AIコメント生成（写真→コメント候補3つ）
+- AI写真分類（基礎/鉄筋/設備/仕上）
+- AI撮り忘れ検知（工程の抜け警告）
 
 ## 2. 使用技術・ツール
 

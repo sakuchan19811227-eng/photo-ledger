@@ -27,6 +27,8 @@ export function getServerConfig() {
     databaseUrl: requireEnv("DATABASE_URL"),
     /** ストレージ実装の切替スイッチ（今は supabase 固定。将来 "gcs" 等を追加） */
     storageProvider: process.env.STORAGE_PROVIDER ?? "supabase",
+    /** AI実装の切替スイッチ（今は none=無効。将来 "anthropic" 等を追加） */
+    aiProvider: process.env.AI_PROVIDER ?? "none",
   } as const;
 }
 
