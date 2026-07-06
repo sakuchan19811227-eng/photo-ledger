@@ -4,6 +4,8 @@
 
 **🌐 公開デモ: https://photo-ledger-rho.vercel.app**（無料で新規登録して試せます）
 
+**📋 ポートフォリオ概要（機能・設計の見どころ・デモアカウント）: [PORTFOLIO.md](PORTFOLIO.md)**
+
 ## 技術スタック
 
 - **フロント**: Next.js (App Router) + TypeScript + Tailwind CSS
