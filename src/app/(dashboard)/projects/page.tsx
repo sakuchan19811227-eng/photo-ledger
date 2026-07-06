@@ -61,12 +61,25 @@ export default async function ProjectsPage({
           <p className="text-lg text-gray-600">
             {keyword
               ? `「${keyword}」に一致する現場はありません`
-              : "まだ現場が登録されていません"}
+              : "ようこそ！ここから写真台帳づくりが始まります"}
           </p>
           {!keyword && (
-            <p className="mt-2 text-base text-gray-500">
-              右上の「＋ 現場を登録」から最初の現場を作りましょう
-            </p>
+            <div className="mx-auto mt-4 max-w-md text-left">
+              <ol className="space-y-2 text-base text-gray-600">
+                <li className="flex items-center gap-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">1</span>
+                  右上の「＋ 現場を登録」で現場を作る
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">2</span>
+                  現場を開いて写真をアップロード＆コメント入力
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">3</span>
+                  「Excel出力」「PDF出力」ボタンで台帳が完成
+                </li>
+              </ol>
+            </div>
           )}
         </div>
       ) : (
